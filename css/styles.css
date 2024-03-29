@@ -1,0 +1,35 @@
+body {
+    min-width: 200px;
+}
+
+.title {
+    font-size: 1.5em;
+}
+
+.timer-container {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    font-size: 1.25em;
+}
+
+.timer {
+    flex: 3;
+    font-weight: bold;
+    text-align: center;
+}
+
+.timer-button {
+    align-items: center;
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.red-text {
+    color: red;
+}
+
+.green-text {
+    color: green;
+}
