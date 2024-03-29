@@ -3,6 +3,9 @@
     "name": "Deep Focus",
     "description": "A deep work focus timer",
     "version": "1.0",
+    "background": {
+        "service_worker": "js/background.js"
+    },
     "action": {
         "default_popup": "index.html",
         "default_icon": "images/default_icon.png"

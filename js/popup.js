@@ -1,44 +1,22 @@
-let timerInterval;
-let startTime;
-let elapsedTime = 0;
-
 const timerElement = document.querySelector('.timer');
 const startButton = document.querySelector('.start-button');
 const pauseButton = document.querySelector('.pause-button');
 const stopButton = document.querySelector('.stop-button');
 
+/** Sends message to service worker to update time. */
 function startTimer() {
-    console.log('Starting the timer');
-    startTime = Date.now() - elapsedTime;
+    chrome.runtime.sendMessage({ action: 'startTimer' });
     updateTimerCss('start');
-    timerInterval = setInterval(updateTimer, 1000); // Update timer every second
 }
 
 function pauseTimer() {
-    console.log("Pausing Timer at %s", elapsedTime);
-    clearInterval(timerInterval);
+    chrome.runtime.sendMessage({ action: 'pauseTimer' });
     updateTimerCss('pause');
 }
 
 function stopTimer() {
-    clearInterval(timerInterval);
-    console.log("Stopping Timer at %s", elapsedTime);
-    elapsedTime = 0;
-    updateTimerDisplay();
+    chrome.runtime.sendMessage({ action: 'stopTimer' });
     updateTimerCss('stop');
-}
-
-function updateTimer() {
-    elapsedTime = Date.now() - startTime;
-    updateTimerDisplay();
-}
-
-function updateTimerDisplay() {
-    const seconds = Math.floor((elapsedTime / 1000) % 60);
-    const minutes = Math.floor((elapsedTime / 1000 / 60) % 60);
-    const hours = Math.floor((elapsedTime / 1000 / 60 / 60) % 24);
-
-    timerElement.textContent = formatTime(hours) + ':' + formatTime(minutes) + ':' + formatTime(seconds);
 }
 
 function formatTime(time) {
@@ -47,7 +25,7 @@ function formatTime(time) {
 
 /** Toggles between the CSS classes for the timerElement */
 function updateTimerCss(scenario) {
-    switch(scenario) {
+    switch (scenario) {
         case 'start':
             timerElement.classList.remove('red-text');
             timerElement.classList.add('green-text');
@@ -65,7 +43,31 @@ function updateTimerCss(scenario) {
     }
 }
 
+function updateTimer(isTimerOn, isTimerPaused) {
+    if(isTimerOn == true) {
+        updateTimerCss('start');
+    } else if(isTimerPaused) {
+        updateTimerCss('pause');
+    }
+}
+
+/** Event Listener */
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log('message received: %s', message.action);
+    if (message.action === 'updateTimerDOM') {
+        // Update value of timer.
+        timerElement.textContent = formatTime(message.data.hours) + ':' + formatTime(message.data.minutes) + ':' + formatTime(message.data.seconds);
+    }
+    if(message.action === 'timerStatus') {
+        // If timer was already active then update timer's CSS.
+        updateTimer(message.data.isTimerOn, message.data.isTimerPaused);
+    }
+});
+
 // Event listeners for buttons
 startButton.addEventListener('click', startTimer);
 pauseButton.addEventListener('click', pauseTimer);
 stopButton.addEventListener('click', stopTimer);
+
+// Checks if timer was active.
+chrome.runtime.sendMessage({ action: 'timerStatus' });
